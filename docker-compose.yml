@@ -24,7 +24,9 @@ services:
       - "9000:9000"
 
   backend:
-    build: ./packages/backend
+    build:
+      context: ./packages/backend
+      dockerfile: Dockerfile
     depends_on:
       - db
       - minio
@@ -45,7 +47,9 @@ services:
       - "4000:4000"
 
   web:
-    build: ./packages/techno-dom
+    build:
+      context: ./packages/techno-dom
+      dockerfile: Dockerfile
     depends_on:
       - backend
     environment:
