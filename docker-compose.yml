@@ -1,0 +1,58 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  minio:
+    image: minio/minio:RELEASE.2023-09-08T06-33-59Z
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+
+  backend:
+    build: ./packages/backend
+    depends_on:
+      - db
+      - minio
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      CORS_ORIGIN: http://localhost:3000
+      ADMIN_PASSWORD: admin
+      JWT_SECRET: change-me-in-production
+      DATABASE_URL: postgres://postgres:postgres@db:5432/appdb
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: products
+    ports:
+      - "4000:4000"
+
+  web:
+    build: ./packages/techno-dom
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+    ports:
+      - "3000:3000"
+
+volumes:
+  db-data:
+  minio-data:

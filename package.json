@@ -1,0 +1,15 @@
+{
+  "name": "andikis2009-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm --workspaces run build",
+    "start": "npm --workspaces run start",
+    "dev": "concurrently \"npm --workspace packages/techno-dom run dev\" \"npm --workspace packages/backend run start\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}
