@@ -1,16 +1,25 @@
-FROM node:18-alpine
-WORKDIR /usr/src/app
+FROM node:18-alpine AS builder
+WORKDIR /app
 
-# copy package files first for caching
-COPY package.json .
-RUN npm install --production --no-audit --no-fund || true
+COPY package.json ./
+RUN npm install --no-audit --no-fund
 
-# copy entire package (including dist and prisma schema)
 COPY . .
+RUN npx prisma generate
+RUN npm run build
 
-# generate prisma client if schema present
-RUN npx prisma generate || true
+# --- Production image ---
+FROM node:18-alpine
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install --production --no-audit --no-fund
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY prisma ./prisma
 
 EXPOSE 4000
 ENV PORT=4000
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/server.js"]
