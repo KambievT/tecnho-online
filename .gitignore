@@ -25,9 +25,5 @@ npm-debug.log*
 .idea/
 
 # Locks and package manager files
-pnpm-lock.yaml
 package-lock.json
 yarn.lock
-
-# Docker
-.dockerignore
