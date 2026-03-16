@@ -1,4 +1,6 @@
-FROM node:18-alpine AS builder
+# Per-package Dockerfile (for local dev without monorepo)
+# For production monorepo build, use Dockerfile.backend at root
+FROM node:22-alpine
 WORKDIR /app
 
 COPY package.json ./
@@ -7,18 +9,6 @@ RUN npm install --no-audit --no-fund
 COPY . .
 RUN npx prisma generate
 RUN npm run build
-
-# --- Production image ---
-FROM node:18-alpine
-WORKDIR /app
-
-COPY package.json ./
-RUN npm install --production --no-audit --no-fund
-
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY prisma ./prisma
 
 EXPOSE 4000
 ENV PORT=4000
