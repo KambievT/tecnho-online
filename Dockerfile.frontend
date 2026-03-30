@@ -1,33 +1,25 @@
+# Dockerfile.frontend
+# ---------- BUILD ----------
 FROM node:22-alpine AS builder
 WORKDIR /app
-
 RUN corepack enable
 
-# Copy workspace manifests
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# copy workspace manifests and .npmrc if present
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 
-# Copy all packages
+# copy all packages
 COPY packages ./packages
 
-# Install dependencies
+# install deps for workspace (dev deps needed for next build)
 RUN pnpm install --frozen-lockfile
 
-# Build frontend (next build with standalone output)
-RUN pnpm --filter "./packages/techno-dom" build
-
-# --- Production image ---
-FROM node:22-alpine
-WORKDIR /app
-
-RUN corepack enable
-
-# Copy entire workspace (pnpm needs workspace structure for start)
-COPY --from=builder /app .
-
-EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-ENV NODE_ENV=production
-
+# build frontend package (this produces /app/packages/techno-dom/.next)
 WORKDIR /app/packages/techno-dom
-CMD ["pnpm", "start"]
+RUN pnpm build
+
+# ---------- PRODUCTION ----------
+FROM node:22-alpine AS prod
+WORKDIR /app
+RUN corepack enable
+ENV NODE_ENV=production
+ENV PORT=3000

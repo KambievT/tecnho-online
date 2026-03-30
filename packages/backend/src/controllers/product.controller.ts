@@ -215,10 +215,13 @@ async function uploadImages(req: Request): Promise<string[]> {
     if (publicUrl) {
       urls.push(`${publicUrl}/${BUCKET}/${key}`);
     } else {
-      const proto = process.env.MINIO_USE_SSL === "true" ? "https" : "http";
-      const host = process.env.MINIO_ENDPOINT || "localhost";
-      const port = process.env.MINIO_PORT || "9000";
-      urls.push(`${proto}://${host}:${port}/${BUCKET}/${key}`);
+      // Fallback: use request host so URLs are reachable from the browser
+      const proto = req.protocol;
+      const host = req.get("host") || "localhost:9000";
+      const minioPort = process.env.MINIO_PORT || "9000";
+      // Replace backend port with MinIO port in the host
+      const minioHost = host.replace(/:\d+$/, `:${minioPort}`);
+      urls.push(`${proto}://${minioHost}/${BUCKET}/${key}`);
     }
   }
   return urls;

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ui/Button";
+import AddToCartButton from "@/components/ui/AddToCartButton";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
 import { Truck, ShieldCheck, Phone, Package, ChevronRight } from "lucide-react";
@@ -188,9 +189,10 @@ export default async function ProductPage({ params }: Props) {
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <AddToCartButton product={product} />
             <a
               href="tel:+70000000000"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-[var(--color-border)] text-[var(--color-text)] font-medium hover:bg-gray-50 transition-colors"
             >
               <Phone className="w-4 h-4" />
               Позвонить

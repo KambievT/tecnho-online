@@ -15,6 +15,20 @@ export async function ensureBucket(): Promise<void> {
   if (!exists) {
     await minioClient.makeBucket(BUCKET);
   }
+
+  // Allow public read access so browsers can load images
+  const policy = {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: { AWS: ["*"] },
+        Action: ["s3:GetObject"],
+        Resource: [`arn:aws:s3:::${BUCKET}/*`],
+      },
+    ],
+  };
+  await minioClient.setBucketPolicy(BUCKET, JSON.stringify(policy));
 }
 
 export { minioClient, BUCKET };

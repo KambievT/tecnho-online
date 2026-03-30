@@ -1,4 +1,12 @@
+  GNU nano 7.2                                                         Dockerfile.backend
 FROM node:22-alpine
+
+# 👇 ДОБАВИТЬ ЭТО
+RUN apk add --no-cache \
+    openssl \
+    libc6-compat \
+    bash
+
 WORKDIR /usr/src/app
 
 RUN corepack enable && corepack prepare pnpm@9 --activate
@@ -9,18 +17,15 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 # Copy all packages
 COPY packages ./packages
 
-# Install dependencies (+ postinstall runs prisma generate)
 RUN pnpm install --frozen-lockfile
 
-# Build backend
 RUN pnpm --filter @andikis/backend run build
 
-# Verify build output exists
 RUN test -f packages/backend/dist/server.js || (echo "ERROR: dist/server.js not found after build!" && ls -R packages/backend/dist/ 2>/dev/null && exit 1)
 
 EXPOSE 4000
 ENV PORT=4000
 
-# Prisma db push on startup, then run server
 WORKDIR /usr/src/app/packages/backend
+
 CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/server.js"]
