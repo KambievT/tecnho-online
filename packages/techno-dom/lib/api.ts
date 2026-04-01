@@ -4,8 +4,8 @@ const isServer = typeof window === "undefined";
 const API_URL = isServer
   ? process.env.INTERNAL_API_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
-    "http://5.42.117.178:4000/api"
-  : process.env.NEXT_PUBLIC_API_URL || "http://5.42.117.178:4000/api";
+    "http://5.42.117.178/api"
+  : process.env.NEXT_PUBLIC_API_URL || "http://5.42.117.178/api";
 
 /** API base URL for use in server components */
 export function getApiUrl(): string {
