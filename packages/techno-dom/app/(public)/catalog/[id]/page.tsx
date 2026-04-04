@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ui/Button";
 import AddToCartButton from "@/components/ui/AddToCartButton";
+import ProductGallery from "@/components/ui/ProductGallery";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
 import { Truck, ShieldCheck, Phone, Package, ChevronRight } from "lucide-react";
@@ -89,61 +90,11 @@ export default async function ProductPage({ params }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Images */}
         <div>
-          {product.images.length > 0 ? (
-            <div className="space-y-4">
-              {/* Main image */}
-              <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-[var(--color-border)]">
-                {discount > 0 && (
-                  <span className="absolute top-4 left-4 z-10 bg-[var(--color-accent)] text-white text-sm font-bold px-3 py-1 rounded-lg">
-                    −{discount}%
-                  </span>
-                )}
-                <Image
-                  src={
-                    product.images[0].url.startsWith("http")
-                      ? product.images[0].url
-                      : `${API}${product.images[0].url}`
-                  }
-                  alt={product.images[0].alt || product.name}
-                  fill
-                  className="object-contain p-6"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  priority
-                />
-              </div>
-              {/* Thumbnails */}
-              {product.images.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-1">
-                  {product.images.map((img, i) => (
-                    <div
-                      key={img.id}
-                      className={`relative w-20 h-20 shrink-0 bg-gray-50 rounded-xl overflow-hidden border-2 transition-colors ${
-                        i === 0
-                          ? "border-[var(--color-primary)]"
-                          : "border-[var(--color-border)] hover:border-gray-300"
-                      }`}
-                    >
-                      <Image
-                        src={
-                          img.url.startsWith("http")
-                            ? img.url
-                            : `${API}${img.url}`
-                        }
-                        alt={img.alt || product.name}
-                        fill
-                        className="object-contain p-2"
-                        sizes="80px"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300 text-6xl border border-[var(--color-border)]">
-              📷
-            </div>
-          )}
+          <ProductGallery
+            images={product.images}
+            productName={product.name}
+            discount={discount}
+          />
         </div>
 
         {/* Info */}

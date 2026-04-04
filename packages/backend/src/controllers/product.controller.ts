@@ -127,15 +127,61 @@ export async function update(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  // Новые изображения (если приложили)
-  const imageUrls = await uploadImages(req);
+  // Управление изображениями
+  const newImageUrls = await uploadImages(req);
+  const { existingImageIds } = req.body;
 
-  if (imageUrls.length) {
-    // удаляем старые записи и добавляем новые
-    await prisma.productImage.deleteMany({ where: { productId: id } });
-    await prisma.productImage.createMany({
-      data: imageUrls.map((url, i) => ({ url, position: i, productId: id })),
+  // existingImageIds — JSON-массив ID изображений, которые нужно оставить (в нужном порядке)
+  if (existingImageIds !== undefined || newImageUrls.length) {
+    const keepIds: number[] = existingImageIds
+      ? JSON.parse(existingImageIds).map(Number)
+      : [];
+
+    // Удаляем изображения, которых нет в keepIds
+    const oldImages = await prisma.productImage.findMany({
+      where: { productId: id },
     });
+    const idsToDelete = oldImages
+      .filter((img) => !keepIds.includes(img.id))
+      .map((img) => img.id);
+
+    // Удаляем файлы из MinIO
+    for (const img of oldImages.filter((i) => idsToDelete.includes(i.id))) {
+      const key = img.url.split("/").pop();
+      if (key) {
+        try {
+          await minioClient.removeObject(BUCKET, key);
+        } catch {
+          // файл мог быть уже удалён
+        }
+      }
+    }
+
+    if (idsToDelete.length) {
+      await prisma.productImage.deleteMany({
+        where: { id: { in: idsToDelete } },
+      });
+    }
+
+    // Обновляем позиции оставшихся
+    for (let i = 0; i < keepIds.length; i++) {
+      await prisma.productImage.update({
+        where: { id: keepIds[i] },
+        data: { position: i },
+      });
+    }
+
+    // Добавляем новые загруженные изображения
+    if (newImageUrls.length) {
+      const startPosition = keepIds.length;
+      await prisma.productImage.createMany({
+        data: newImageUrls.map((url, i) => ({
+          url,
+          position: startPosition + i,
+          productId: id,
+        })),
+      });
+    }
   }
 
   if (Array.isArray(filterValueIds)) {

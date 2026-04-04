@@ -6,6 +6,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { productService } from "@/services/products";
 import { categoryService } from "@/services/categories";
 import type { Category } from "@/types";
+import { X, Plus } from "lucide-react";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -21,7 +22,8 @@ export default function NewProductPage() {
   const [oldPrice, setOldPrice] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [inStock, setInStock] = useState(true);
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
 
   useEffect(() => {
     categoryService
@@ -45,9 +47,7 @@ export default function NewProductPage() {
       if (oldPrice) fd.append("oldPrice", oldPrice);
       if (categoryId) fd.append("categoryId", categoryId);
       fd.append("inStock", String(inStock));
-      if (files) {
-        Array.from(files).forEach((f) => fd.append("images", f));
-      }
+      files.forEach((f) => fd.append("images", f));
 
       await productService.create(fd, token);
       router.push("/admin/products");
@@ -158,14 +158,55 @@ export default function NewProductPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Фотографии</label>
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) => setFiles(e.target.files)}
-            className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-[var(--color-primary)] hover:file:bg-blue-100"
-          />
+          <label className="block text-sm font-medium mb-2">Фотографии</label>
+
+          {previews.length > 0 && (
+            <div className="flex flex-wrap gap-3 mb-3">
+              {previews.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative w-24 h-24 bg-gray-50 rounded-xl overflow-hidden border border-[var(--color-border)] group"
+                >
+                  <img
+                    src={src}
+                    alt=""
+                    className="w-full h-full object-contain p-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFiles((prev) => prev.filter((_, idx) => idx !== i));
+                      setPreviews((prev) => prev.filter((_, idx) => idx !== i));
+                    }}
+                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-[var(--color-border)] text-sm cursor-pointer hover:bg-gray-50 transition-colors">
+            <Plus className="w-4 h-4" />
+            Добавить фото
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const added = Array.from(e.target.files || []);
+                if (!added.length) return;
+                setFiles((prev) => [...prev, ...added]);
+                setPreviews((prev) => [
+                  ...prev,
+                  ...added.map((f) => URL.createObjectURL(f)),
+                ]);
+                e.target.value = "";
+              }}
+            />
+          </label>
         </div>
 
         <div className="flex gap-3 pt-2">

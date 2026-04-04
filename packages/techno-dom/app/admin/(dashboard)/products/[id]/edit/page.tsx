@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/auth-provider";
 import { productService } from "@/services/products";
 import { categoryService } from "@/services/categories";
-import type { Product, Category } from "@/types";
+import { getApiUrl } from "@/lib/api";
+import type { Product, Category, ProductImage } from "@/types";
+import { X, GripVertical, Plus } from "lucide-react";
 
 export default function EditProductPage({
   params,
@@ -27,7 +29,10 @@ export default function EditProductPage({
   const [oldPrice, setOldPrice] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [inStock, setInStock] = useState(true);
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
+  const API = getApiUrl();
 
   useEffect(() => {
     Promise.all([productService.getById(Number(id)), categoryService.getAll()])
@@ -39,6 +44,7 @@ export default function EditProductPage({
         setOldPrice(product.oldPrice || "");
         setCategoryId(product.categoryId ? String(product.categoryId) : "");
         setInStock(product.inStock);
+        setExistingImages(product.images || []);
         setCategories(cats);
       })
       .catch((err) =>
@@ -61,9 +67,11 @@ export default function EditProductPage({
       if (oldPrice) fd.append("oldPrice", oldPrice);
       if (categoryId) fd.append("categoryId", categoryId);
       fd.append("inStock", String(inStock));
-      if (files) {
-        Array.from(files).forEach((f) => fd.append("images", f));
-      }
+      fd.append(
+        "existingImageIds",
+        JSON.stringify(existingImages.map((img) => img.id)),
+      );
+      newFiles.forEach((f) => fd.append("images", f));
       await productService.update(Number(id), fd, token);
       router.push("/admin/products");
     } catch (err) {
@@ -175,16 +183,94 @@ export default function EditProductPage({
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Фотографии</label>
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) => setFiles(e.target.files)}
-            className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-[var(--color-primary)] hover:file:bg-blue-100"
-          />
+          <label className="block text-sm font-medium mb-2">Фотографии</label>
+
+          {/* Existing images */}
+          {existingImages.length > 0 && (
+            <div className="flex flex-wrap gap-3 mb-3">
+              {existingImages.map((img) => (
+                <div
+                  key={img.id}
+                  className="relative w-24 h-24 bg-gray-50 rounded-xl overflow-hidden border border-[var(--color-border)] group"
+                >
+                  <img
+                    src={
+                      img.url.startsWith("http") ? img.url : `${API}${img.url}`
+                    }
+                    alt={img.alt || ""}
+                    className="w-full h-full object-contain p-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExistingImages((prev) =>
+                        prev.filter((i) => i.id !== img.id),
+                      )
+                    }
+                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* New file previews */}
+          {newPreviews.length > 0 && (
+            <div className="flex flex-wrap gap-3 mb-3">
+              {newPreviews.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative w-24 h-24 bg-gray-50 rounded-xl overflow-hidden border border-dashed border-blue-300 group"
+                >
+                  <img
+                    src={src}
+                    alt=""
+                    className="w-full h-full object-contain p-1"
+                  />
+                  <span className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-[10px] text-center">
+                    Новое
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewFiles((prev) => prev.filter((_, idx) => idx !== i));
+                      setNewPreviews((prev) =>
+                        prev.filter((_, idx) => idx !== i),
+                      );
+                    }}
+                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-[var(--color-border)] text-sm cursor-pointer hover:bg-gray-50 transition-colors">
+            <Plus className="w-4 h-4" />
+            Добавить фото
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const added = Array.from(e.target.files || []);
+                if (!added.length) return;
+                setNewFiles((prev) => [...prev, ...added]);
+                setNewPreviews((prev) => [
+                  ...prev,
+                  ...added.map((f) => URL.createObjectURL(f)),
+                ]);
+                e.target.value = "";
+              }}
+            />
+          </label>
           <p className="text-xs text-[var(--color-text-muted)] mt-1">
-            Если загрузите новые фото — старые будут заменены
+            Нажмите × чтобы удалить фото. Новые фото добавятся в конец.
           </p>
         </div>
 
