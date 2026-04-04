@@ -79,9 +79,8 @@ async function main() {
     );
   }
 
-  app.listen(PORT, () => {
-    console.log(`🚀 Сервер запущен: http://localhost:${PORT}`);
-    console.log(`📚 Swagger UI: http://localhost:${PORT}/api/docs`);
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Сервер запущен: http://0.0.0.0:${PORT}`);
   });
 }
 

@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   minio:
     image: minio/minio
@@ -38,6 +40,8 @@ services:
       MINIO_BUCKET: products
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-}
       PUBLIC_API_URL: ${PUBLIC_API_URL:-}
+    ports:
+      - "4000:4000" # чтобы Nginx и хост могли достучаться
     networks:
       - technet
 
@@ -54,7 +58,7 @@ services:
       INTERNAL_API_URL: http://backend:4000/api
       HOSTNAME: "0.0.0.0"
     ports:
-      - "3000:80"
+      - "3000:3000"
     networks:
       - technet
 
