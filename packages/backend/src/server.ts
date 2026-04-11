@@ -16,6 +16,7 @@ import categoryRoutes from "./routes/category.routes";
 import filterRoutes from "./routes/filter.routes";
 import productRoutes from "./routes/product.routes";
 import addressRoutes from "./routes/address.routes";
+import orderRoutes from "./routes/order.routes";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "4000", 10);
@@ -46,6 +47,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/filters", filterRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/addresses", addressRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Health-check
 app.get("/api/health", (_req, res) => {

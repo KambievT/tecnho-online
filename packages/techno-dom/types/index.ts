@@ -78,6 +78,32 @@ export interface LoginResponse {
   token: string;
 }
 
+export type OrderStatus = "NEW" | "PROCESSING" | "COMPLETED" | "CANCELLED";
+
+export interface OrderItem {
+  id: number;
+  orderId: number;
+  productId: number;
+  product?: Product;
+  name: string;
+  price: string;
+  quantity: number;
+}
+
+export interface Order {
+  id: number;
+  customerName: string;
+  phone: string;
+  email: string | null;
+  address: string | null;
+  comment: string | null;
+  status: OrderStatus;
+  totalPrice: string;
+  items: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Admin {
   id: number;
   login: string;

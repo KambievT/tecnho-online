@@ -10,10 +10,12 @@ import {
   SlidersHorizontal,
   MapPin,
   LogOut,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
+  { label: "Заявки", href: "/admin/orders", icon: ClipboardList },
   { label: "Товары", href: "/admin/products", icon: Package },
   { label: "Категории", href: "/admin/categories", icon: FolderTree },
   { label: "Фильтры", href: "/admin/filters", icon: SlidersHorizontal },
