@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import ProductCard from "@/components/ui/ProductCard";
+import ParticlesBackground from "@/components/ui/ParticlesBackground";
 import type { Product, Category, PaginatedResponse } from "@/types";
 import Image from "next/image";
 import { getApiUrl } from "@/lib/api";
@@ -51,6 +52,7 @@ export default async function HomePage() {
         id="banner"
         className="relative overflow-hidden bg-gradient-to-b from-blue-50/80 to-white"
       >
+        <ParticlesBackground />
         <div className="max-w-7xl mx-auto px-4 py-20 md:py-32 text-center relative z-10">
           <p className="text-[var(--color-accent)] font-semibold tracking-wide uppercase text-sm mb-4">
             Бытовая техника для дома

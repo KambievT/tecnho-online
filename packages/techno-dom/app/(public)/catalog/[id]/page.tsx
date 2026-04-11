@@ -142,20 +142,12 @@ export default async function ProductPage({ params }: Props) {
           <div className="flex flex-col sm:flex-row gap-3 mb-8">
             <AddToCartButton product={product} />
             <a
-              href="tel:+70000000000"
+              href="tel:+79117038900"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-[var(--color-border)] text-[var(--color-text)] font-medium hover:bg-gray-50 transition-colors"
             >
               <Phone className="w-4 h-4" />
               Позвонить
             </a>
-            <ButtonLink
-              href="/feedback"
-              variant="outline"
-              size="lg"
-              className="rounded-xl"
-            >
-              Написать нам
-            </ButtonLink>
           </div>
 
           {/* Perks */}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, Settings } from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import CartSheet from "./CartSheet";
 import SearchOverlay from "./SearchOverlay";
 import { useCart } from "@/providers/cart-provider";
@@ -132,12 +132,6 @@ export default function Header() {
               aria-label="Поиск"
             >
               <Search className="w-5 h-5 text-[var(--color-text-muted)]" />
-            </button>
-            <button
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Настройки"
-            >
-              <Settings className="w-5 h-5 text-[var(--color-text-muted)]" />
             </button>
             <button
               onClick={() => setCartOpen(true)}
